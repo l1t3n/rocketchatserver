@@ -10,8 +10,8 @@
     docker_prefix=$COMPOSE_PROJECT_NAME
 
     docker_network_name=${docker_prefix}_net
-    docker_network_subnet=10.244.244.0/24
-    docker_network_gateway=10.244.244.1
+    docker_network_subnet=${DOCKER_NETWORK_SUBNET}
+    docker_network_gateway=${DOCKER_NETWORK_GATEWAY}
 }
 ### endblock define_vars ###
 
@@ -55,6 +55,8 @@
 
     # check var defined
     if [ -z "$docker_prefix" ]; then decor_red_echo "No containers prefix"; cyan_echo Exit!; exit 1; fi
+    if [ -z "$docker_network_subnet" ]; then decor_red_echo "No containers network subnet"; cyan_echo Exit!; exit 1; fi
+    if [ -z "$docker_network_gateway" ]; then decor_red_echo "No containers network gateway"; cyan_echo Exit!; exit 1; fi
 }
 ### endblock check_var_definition
 
@@ -90,11 +92,10 @@ function create_network () {
     fi
 }
 
-function fix_dir_permission () {
-    # todo: change to env
-    cyan_echo Set permision to prometheus datafolder
-    sudo chown 65534:65534 volumes/prometheus/
-}
+# function fix_dir_permission () {
+#     cyan_echo Set permision to prometheus datafolder
+#     sudo chown 65534:65534 volumes/prometheus/
+# }
 ### endblock functions ###
 
 
@@ -106,8 +107,6 @@ function main () {
     drop_containers
 
     create_network
-
-    fix_dir_permission
 
     cyan_echo Start dockers
     sudo docker-compose --env-file $dotenv_file -f $compose_file up --build -d
